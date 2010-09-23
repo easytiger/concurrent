@@ -1,0 +1,14 @@
+*Concurrent*
+
+Simple python written automation aid. It allows you to consume a large
+number of files which may all have large processing times or large
+memory usage and execute a program over all of them. However this
+program will ensure than only 'n' files/commands will be executed at
+any one point in time.
+
+i.e. ./concurrent <num procs> "command and args>" <files....>
+e.g. ./concurrent 8 "mycommand -e 100 -f %f" *.txt
+
+NB: Note the quotes *must* exist around the command and its arguments
+NB: %f is the placeholder for where you wish the file to be
+intperolated in the command

@@ -1,0 +1,60 @@
+#! /usr/bin/python
+import sys
+import subprocess
+import shlex
+import time
+
+def main(argv):
+    print argv
+    if len(argv) < 4:
+        print "Incorrect usage. Not enough parameters."
+        print "\ti.e. ./concurrent <num procs> \"command and args>\" <files....>"
+        print "\te.g. ./concurrent 8 \"mycommand -e 100 -f %f\" *.txt"
+        print "NB: Note the quotes *must* exist around the command and its arguments"
+        print "NB: %f is the placeholder for where you wish the file to be intperolated in the command"
+        sys.exit(-1)
+
+    app = argv[2] # command
+    files = argv[3:] # files to process
+    print "cmd: " + app
+    print "files: " + str(files)
+    
+    step = int(argv[1]) 
+    
+    for x in range(0, len(files), step):
+        print files[x:x+step]
+        run_procs(app,files[x:x+step])
+
+def run_procs(app, files):
+    procs = []
+    f_outs = []
+    
+    c = 0
+    # run processes on files
+    for f in files:
+        cmd = str(app)
+        #interpolate
+        cmd = cmd.replace("%f", str(f))
+        print "running -> " + cmd
+        f_outs.append(open(f + ".stdout", 'w')) 
+        # do the running
+        procs.append(subprocess.Popen(shlex.split(cmd), 
+                                      stdout=f_outs[c], 
+                                      stderr=subprocess.STDOUT))
+        c += 1
+
+    #reap processes
+    while len(procs) != 0:
+        for p in procs:
+            if p.poll() != None:
+                procs.remove(p)
+            else:
+                time.sleep(0.00005)
+    # close output files
+    for fptr in f_outs:
+        fptr.close()
+    
+    print "Quitting"
+
+if __name__ == '__main__':
+    main(sys.argv)
